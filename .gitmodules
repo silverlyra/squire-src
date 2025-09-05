@@ -1,0 +1,4 @@
+[submodule "sqlite"]
+	path = sqlite
+	url = https://github.com/sqlite/sqlite.git
+	branch = version-3.50.4

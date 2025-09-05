@@ -1,0 +1,21 @@
+[package]
+name = "squire-sqlite3-src"
+description = "Bundled SQLite sources for Squire"
+version = "3.50.4-alpha.1"
+edition = "2024"
+repository = "https://github.com/silverlyra/squire-src"
+license = "Apache-2.0"
+keywords = ["sqlite"]
+
+exclude = ["sqlite/**"]
+
+[features]
+default = []
+parallel = ["cc/parallel"]
+
+[dependencies.cc]
+version = "^1.2.34"
+
+[dependencies.strum]
+version = "^0.27.2"
+features = ["derive"]
