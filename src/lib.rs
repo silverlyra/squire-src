@@ -17,6 +17,7 @@ use std::{collections::HashMap, env, iter, ops::Deref, path::PathBuf};
 
 use strum::{EnumDiscriminants, IntoDiscriminant};
 
+/// Build the bundled SQLite sources, using the given [`Config`].
 pub fn build(location: Location, config: impl AsRef<Config>) -> Build {
     let config = config.as_ref();
 
@@ -55,6 +56,7 @@ impl Deref for Build {
     }
 }
 
+/// Specifies the source and target directories for [`build`].
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Location {
     src: PathBuf,
@@ -62,6 +64,7 @@ pub struct Location {
 }
 
 impl Location {
+    /// Create a build [`Location`] from `$CARGO_MANIFEST_DIR`.
     pub fn new(dest: impl Into<PathBuf>) -> Self {
         Self {
             src: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("amalgamation"),
@@ -69,18 +72,22 @@ impl Location {
         }
     }
 
+    /// The path to `sqlite3.c`.
     pub fn input(&self) -> PathBuf {
         self.src.join("sqlite3.c")
     }
 
+    /// The path to `sqlite3.h`.
     pub fn header(&self) -> PathBuf {
         self.src.join("sqlite3.h")
     }
 
+    /// The build's target directory.
     pub fn dest(&self) -> PathBuf {
         self.dest.clone()
     }
 
+    /// Iterates source files (`sqlite3.c` and `sqlite3.h`).
     pub fn sources(&self) -> impl Iterator<Item = PathBuf> {
         iter::once(self.input()).chain(iter::once(self.header()))
     }
@@ -94,6 +101,9 @@ impl Default for Location {
     }
 }
 
+/// Configures a SQLite [`build`], applying various [compile-time options][].
+///
+/// [compile-time options]: https://sqlite.org/compile.html
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Config {
     settings: HashMap<SettingKey, Setting>,
@@ -132,7 +142,7 @@ impl AsRef<Config> for Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self::new(vec![
+        Self::new([
             Setting::Sync(Synchronous::Full),
             Setting::WalSync(Synchronous::Normal),
             Setting::Threading(Threading::MultiThread),
@@ -143,17 +153,24 @@ impl Default for Config {
             Setting::DefaultForeignKeys(true),
             Setting::DefaultMemoryStatus(false),
             Setting::EnableAlloca(true),
+            Setting::EnableAuthorization(false),
             Setting::EnableAutomaticIndex(true),
             Setting::EnableAutomaticInitialize(true), // TODO
+            Setting::EnableAutomaticReset(false),
+            Setting::EnableBlobIo(false),
             Setting::EnableColumnDeclaredType(false),
             Setting::EnableDatabasePagesVirtualTable(false),
             Setting::EnableDatabaseStatisticsVirtualTable(false),
             Setting::EnableDatabaseUri(true),
             Setting::EnableDeprecated(false),
+            Setting::EnableGetTable(false),
             Setting::EnableMemoryManagement(true),
             Setting::EnableProgressCallback(false),
             Setting::EnableSharedCache(false),
             Setting::EnableTrace(false),
+            Setting::EnableUtf16(false),
+            Setting::EnableVirtualTables(true),
+            Setting::EnableWriteAheadLog(true),
             Setting::LikeOperatorMatchesBlob(false),
             Setting::MaxExpressionDepth(0),
             #[cfg(debug_assertions)]
@@ -164,6 +181,9 @@ impl Default for Config {
     }
 }
 
+/// A [compile-time option][] for a SQLite [`build`].
+///
+/// [compile-time option]: https://sqlite.org/compile.html
 #[derive(EnumDiscriminants, PartialEq, Eq, Clone, Copy, Debug)]
 #[strum_discriminants(name(SettingKey))]
 #[strum_discriminants(derive(Hash))]
@@ -190,10 +210,16 @@ pub enum Setting {
     EnableAlloca(bool),
     #[doc(alias = "SQLITE_ENABLE_API_ARMOR")]
     EnableApiArmor(bool),
+    #[doc(alias = "SQLITE_OMIT_AUTHORIZATION")]
+    EnableAuthorization(bool),
     #[doc(alias = "SQLITE_OMIT_AUTOMATIC_INDEX")]
     EnableAutomaticIndex(bool),
     #[doc(alias = "SQLITE_OMIT_AUTOINIT")]
     EnableAutomaticInitialize(bool),
+    #[doc(alias = "SQLITE_OMIT_AUTORESET")]
+    EnableAutomaticReset(bool),
+    #[doc(alias = "SQLITE_OMIT_INCRBLOB")]
+    EnableBlobIo(bool),
     #[doc(alias = "SQLITE_OMIT_DECLTYPE")]
     EnableColumnDeclaredType(bool),
     #[doc(alias = "SQLITE_ENABLE_COLUMN_METADATA")]
@@ -208,11 +234,14 @@ pub enum Setting {
     EnableDeprecated(bool),
     #[doc(alias = "SQLITE_ENABLE_GEOPOLY")]
     EnableGeopoly(bool),
+    #[doc(alias = "SQLITE_OMIT_GET_TABLE")]
+    EnableGetTable(bool),
     #[doc(alias = "SQLITE_ENABLE_FTS3")]
     #[doc(alias = "SQLITE_ENABLE_FTS4")]
     EnableFts3(bool),
     #[doc(alias = "SQLITE_ENABLE_FTS5")]
     EnableFts5(bool),
+    #[doc(alias = "SQLITE_ENABLE_JSON1")]
     #[doc(alias = "SQLITE_OMIT_JSON")]
     EnableJson(bool),
     #[doc(alias = "SQLITE_OMIT_LOAD_EXTENSION")]
@@ -245,7 +274,13 @@ pub enum Setting {
     EnableTemporaryDatabase(bool),
     #[doc(alias = "SQLITE_OMIT_TRACE")]
     EnableTrace(bool),
-    #[doc(alias = "SQLITE_CASE_SENSITIVE_LIKE")]
+    #[doc(alias = "SQLITE_OMIT_UTF16")]
+    EnableUtf16(bool),
+    #[doc(alias = "SQLITE_OMIT_VIRTUALTABLE")]
+    EnableVirtualTables(bool),
+    #[doc(alias = "SQLITE_OMIT_VIRTUALTABLE")]
+    EnableWriteAheadLog(bool),
+    #[doc(alias = "SQLITE_OMIT_WAL")]
     LikeOperatorCaseSensitive(bool),
     #[doc(alias = "SQLITE_LIKE_DOESNT_MATCH_BLOBS")]
     LikeOperatorMatchesBlob(bool),
@@ -301,11 +336,20 @@ impl Setting {
             Setting::EnableApiArmor(enable) => {
                 self.define(build, "SQLITE_ENABLE_API_ARMOR", enable);
             }
+            Setting::EnableAuthorization(enable) => {
+                self.define(build, "SQLITE_OMIT_AUTHORIZATION", !enable);
+            }
             Setting::EnableAutomaticIndex(enable) => {
                 self.define(build, "SQLITE_OMIT_AUTOMATIC_INDEX", !enable);
             }
             Setting::EnableAutomaticInitialize(enable) => {
                 self.define(build, "SQLITE_OMIT_AUTOINIT", !enable);
+            }
+            Setting::EnableAutomaticReset(enable) => {
+                self.define(build, "SQLITE_OMIT_AUTORESET", !enable);
+            }
+            Setting::EnableBlobIo(enable) => {
+                self.define(build, "SQLITE_OMIT_INCRBLOB", !enable);
             }
             Setting::EnableColumnDeclaredType(enable) => {
                 self.define(build, "SQLITE_OMIT_DECLTYPE", !enable);
@@ -334,6 +378,9 @@ impl Setting {
             }
             Setting::EnableGeopoly(enable) => {
                 self.define(build, "SQLITE_ENABLE_GEOPOLY", enable);
+            }
+            Setting::EnableGetTable(enable) => {
+                self.define(build, "SQLITE_OMIT_GET_TABLE", !enable);
             }
             Setting::EnableJson(enable) => {
                 self.define(build, "SQLITE_OMIT_JSON", !enable);
@@ -382,6 +429,15 @@ impl Setting {
             }
             Setting::EnableTrace(enable) => {
                 self.define(build, "SQLITE_OMIT_TRACE", !enable);
+            }
+            Setting::EnableUtf16(enable) => {
+                self.define(build, "SQLITE_OMIT_UTF16", !enable);
+            }
+            Setting::EnableVirtualTables(enable) => {
+                self.define(build, "SQLITE_OMIT_VIRTUALTABLE", !enable);
+            }
+            Setting::EnableWriteAheadLog(enable) => {
+                self.define(build, "SQLITE_OMIT_WAL", !enable);
             }
             Setting::LikeOperatorCaseSensitive(enable) => {
                 self.define(build, "SQLITE_CASE_SENSITIVE_LIKE", enable);
