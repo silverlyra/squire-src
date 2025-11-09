@@ -2,8 +2,8 @@ Apache License
 ==============
 
 > **NOTE**: The terms of this license apply only to the Rust source code of
-  `squire-sqlite3-src`, not to the bundled [SQLite][sqlite] source code. SQLite
-  is [in the public domain][copyright].
+> `squire-sqlite3-src`, not to the [vendored][vendor] [SQLite][sqlite] source
+> code. SQLite is [in the public domain][copyright].
 
 _Version 2.0, January 2004_
 _&lt;<http://www.apache.org/licenses/>&gt;_
@@ -198,4 +198,5 @@ third-party archives.
     limitations under the License.
 
 [sqlite]: https://sqlite.org/index.html
+[vendor]: ./vendor/README.md
 [copyright]: https://sqlite.org/copyright.html
