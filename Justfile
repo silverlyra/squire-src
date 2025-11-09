@@ -9,8 +9,9 @@ sqlite: prepare
     make sqlite3.c
 
 update version: prepare
-    git submodule set-branch --branch version-{{ version }} vendor/sqlite
-    git submodule update
+    git submodule set-branch --branch tags/version-{{ version }} vendor/sqlite
+    git submodule sync
+    git submodule update --remote
 
 prepare:
     [ -d vendor/sqlite ] || git submodule update --init

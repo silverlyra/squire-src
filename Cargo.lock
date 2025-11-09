@@ -104,7 +104,7 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "squire-sqlite3-src"
-version = "3.50.4-alpha.2"
+version = "3.51.0-alpha.1"
 dependencies = [
  "cc",
  "strum",

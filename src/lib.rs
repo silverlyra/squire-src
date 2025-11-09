@@ -33,6 +33,7 @@ pub fn build(location: Location, config: impl AsRef<Config>) -> Build {
     Build::new(location)
 }
 
+/// The output of [`Build`], including the [`Location`] SQLite was built into.
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Build {
     location: Location,
@@ -43,8 +44,14 @@ impl Build {
         Self { location }
     }
 
+    /// The `.c` source files that need to be built (`sqlite3.c`).
     pub fn sources(&self) -> impl Iterator<Item = PathBuf> {
         iter::once(self.input())
+    }
+
+    /// The build [`Location`].
+    pub const fn location(&self) -> &Location {
+        &self.location
     }
 }
 
@@ -52,7 +59,7 @@ impl Deref for Build {
     type Target = Location;
 
     fn deref(&self) -> &Self::Target {
-        &self.location
+        self.location()
     }
 }
 
@@ -110,6 +117,7 @@ pub struct Config {
 }
 
 impl Config {
+    /// Configure a build using the given [settings](Setting).
     pub fn new(settings: impl IntoIterator<Item = Setting>) -> Self {
         Self {
             settings: settings
@@ -119,10 +127,12 @@ impl Config {
         }
     }
 
+    /// Look up a [setting](Setting) by its [key](SettingKey).
     pub fn get(&self, key: SettingKey) -> Option<Setting> {
         self.settings.get(&key).copied()
     }
 
+    /// Change a build [setting](Setting).
     pub fn set(&mut self, setting: Setting) {
         self.settings.insert(setting.discriminant(), setting);
     }
@@ -146,10 +156,7 @@ impl Default for Config {
             Setting::Sync(Synchronous::Full),
             Setting::WalSync(Synchronous::Normal),
             Setting::Threading(Threading::MultiThread),
-            Setting::DoubleQuotedStrings {
-                in_ddl: false,
-                in_dml: false,
-            },
+            Setting::DoubleQuotedStrings(DoubleQuotedStrings::default()),
             Setting::DefaultForeignKeys(true),
             Setting::DefaultMemoryStatus(false),
             Setting::EnableAlloca(true),
@@ -189,7 +196,7 @@ impl Default for Config {
 #[strum_discriminants(derive(Hash))]
 pub enum Setting {
     #[doc(alias = "SQLITE_DQS")]
-    DoubleQuotedStrings { in_ddl: bool, in_dml: bool },
+    DoubleQuotedStrings(DoubleQuotedStrings),
     #[doc(alias = "SQLITE_THREADSAFE")]
     Threading(Threading),
     #[doc(alias = "SQLITE_DEBUG")]
@@ -320,7 +327,7 @@ impl Setting {
             Setting::DefaultMemoryStatus(enable) => {
                 self.set(build, "SQLITE_DEFAULT_MEMSTATUS", enable);
             }
-            Setting::DoubleQuotedStrings { in_ddl, in_dml } => {
+            Setting::DoubleQuotedStrings(DoubleQuotedStrings { in_ddl, in_dml }) => {
                 let value = match (in_ddl, in_dml) {
                     (true, true) => 3,
                     (true, false) => 2,
@@ -490,6 +497,12 @@ impl Setting {
     fn set(&self, build: &mut cc::Build, name: &'static str, value: impl SettingValue) {
         value.apply(build, name);
     }
+}
+
+#[derive(PartialEq, Eq, Clone, Copy, Default, Debug)]
+pub struct DoubleQuotedStrings {
+    in_ddl: bool,
+    in_dml: bool,
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
