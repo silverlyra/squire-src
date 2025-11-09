@@ -7,6 +7,7 @@ build: sqlite
 sqlite: prepare
     ../vendor/sqlite/configure
     make sqlite3.c
+    cp ../vendor/sqlite/README.md ../vendor/sqlite/LICENSE.md ../vendor/sqlite/VERSION .
 
 update version: prepare
     git submodule set-branch --branch tags/version-{{ version }} vendor/sqlite

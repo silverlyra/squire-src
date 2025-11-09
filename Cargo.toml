@@ -1,13 +1,22 @@
 [package]
 name = "squire-sqlite3-src"
 description = "Bundled SQLite sources for Squire"
-version = "3.51.0-alpha.1"
+version = "3.51.0-alpha.2"
 edition = "2024"
 repository = "https://github.com/silverlyra/squire-src"
 license = "Apache-2.0"
 keywords = ["sqlite"]
 
-include = ["amalgamation/sqlite3.c", "amalgamation/sqlite3.h", "/src", "LICENSE.md", "/README.md"]
+include = [
+    "/sqlite/README.md",
+    "/sqlite/LICENSE.md",
+    "/sqlite/VERSION",
+    "/sqlite/sqlite3.c",
+    "/sqlite/sqlite3.h",
+    "/src",
+    "/LICENSE.md",
+    "/README.md",
+]
 
 [features]
 default = []

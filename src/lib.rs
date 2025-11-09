@@ -74,7 +74,7 @@ impl Location {
     /// Create a build [`Location`] from `$CARGO_MANIFEST_DIR`.
     pub fn new(dest: impl Into<PathBuf>) -> Self {
         Self {
-            src: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("amalgamation"),
+            src: PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("sqlite"),
             dest: dest.into(),
         }
     }
