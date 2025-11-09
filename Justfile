@@ -1,13 +1,22 @@
 #!/usr/bin/env just --justfile
 
-prepare:
-    mkdir -p amalgamation
+build: sqlite
+    cargo build
 
-[working-directory: 'amalgamation']
-amalgamate: prepare
-    ../sqlite/configure
+[working-directory: 'sqlite']
+sqlite: prepare
+    ../vendor/sqlite/configure
     make sqlite3.c
 
+update version: prepare
+    git submodule set-branch --branch tags/version-{{ version }} vendor/sqlite
+    git submodule sync
+    git submodule update --remote
+
+prepare:
+    [ -d vendor/sqlite ] || git submodule update --init
+    mkdir -p sqlite
+
 clean:
-    rm -fr amalgamation
+    rm -fr sqlite
     cargo clean
