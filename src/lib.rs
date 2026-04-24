@@ -285,9 +285,9 @@ pub enum Setting {
     EnableUtf16(bool),
     #[doc(alias = "SQLITE_OMIT_VIRTUALTABLE")]
     EnableVirtualTables(bool),
-    #[doc(alias = "SQLITE_OMIT_VIRTUALTABLE")]
-    EnableWriteAheadLog(bool),
     #[doc(alias = "SQLITE_OMIT_WAL")]
+    EnableWriteAheadLog(bool),
+    #[doc(alias = "SQLITE_CASE_SENSITIVE_LIKE")]
     LikeOperatorCaseSensitive(bool),
     #[doc(alias = "SQLITE_LIKE_DOESNT_MATCH_BLOBS")]
     LikeOperatorMatchesBlob(bool),
