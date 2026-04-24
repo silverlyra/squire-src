@@ -2,4 +2,4 @@
 	path = vendor/sqlite
 	url = https://github.com/sqlite/sqlite.git
 	fetch = +refs/tags/*:refs/remotes/origin/tags/*
-	branch = tags/version-3.52.0
+	branch = tags/version-3.53.0
