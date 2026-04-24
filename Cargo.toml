@@ -1,7 +1,7 @@
 [package]
 name = "squire-sqlite3-src"
 description = "Bundled SQLite sources for Squire"
-version = "3.52.0-alpha.1"
+version = "3.53.0-alpha.1"
 edition = "2024"
 repository = "https://github.com/silverlyra/squire-src"
 license = "Apache-2.0"
