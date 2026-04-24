@@ -297,6 +297,8 @@ pub enum Setting {
     MaxColumns(usize),
     #[doc(alias = "SQLITE_MAX_EXPR_DEPTH")]
     MaxExpressionDepth(usize),
+    #[doc(alias = "SQLITE_MAX_MMAP_SIZE")]
+    MaxMmapSize(usize),
     #[doc(alias = "SQLITE_JSON_MAX_DEPTH")]
     MaxJsonDepth(usize),
     #[doc(alias = "SQLITE_MAX_VARIABLE_NUMBER")]
@@ -463,6 +465,9 @@ impl Setting {
             }
             Setting::MaxJsonDepth(max) => {
                 self.set(build, "SQLITE_JSON_MAX_DEPTH", max);
+            }
+            Setting::MaxMmapSize(max) => {
+                self.set(build, "SQLITE_MAX_MMAP_SIZE", max);
             }
             Setting::MaxVariables(max) => {
                 self.set(build, "SQLITE_MAX_VARIABLE_NUMBER", max);
