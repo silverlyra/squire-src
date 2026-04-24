@@ -180,6 +180,7 @@ impl Default for Config {
             Setting::EnableWriteAheadLog(true),
             Setting::LikeOperatorMatchesBlob(false),
             Setting::MaxExpressionDepth(0),
+            Setting::MaxMmapSize(0),
             #[cfg(debug_assertions)]
             Setting::EnableApiArmor(true),
             #[cfg(debug_assertions)]
